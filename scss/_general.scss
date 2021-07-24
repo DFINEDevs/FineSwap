@@ -1,0 +1,35 @@
+body {
+	font-family: 'Source Sans Pro', sans-serif;
+	background: var(--primary);
+	color: var(--secondary);
+	margin: 0;
+	overflow-y: scroll;
+
+	& > * {
+		padding: 0px 60px;
+
+		@media screen and (max-width: 660px) {
+			padding: 0px 20px;
+		}
+	}
+
+	& * {
+		box-sizing: border-box;
+	}
+}
+
+header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	background: transparent;
+	color: white;
+}
+
+span {
+	&[justify-sb] {
+		width: 100%;
+		display: flex;
+		justify-content: space-between;
+	}
+}

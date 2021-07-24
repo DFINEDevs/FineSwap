@@ -1,0 +1,19 @@
+button {
+	padding: 10px;
+	background: var(--primary);
+	border: 0;
+	border-radius: 3px;
+	color: white;
+	font-weight: bold;
+	font-family: 'Source Sans Pro', sans-serif;
+	transition: 1s;
+	cursor: pointer;
+
+	&:hover {
+		filter: grayscale(1);
+	}
+
+	&:active {
+		scale: 0.95;
+	}
+}

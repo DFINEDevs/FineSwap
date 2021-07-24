@@ -1,0 +1,37 @@
+/*
+  <input> element file styling
+  exclusive for FineSwap's style
+*/
+input {
+	padding: 10px;
+	border: 1px solid var(--secondary);
+	outline: 0;
+	border-radius: 3px;
+	color: var(--bolder);
+	font-family: 'Source Sans Pro', sans-serif;
+	font-weight: bold;
+	font-size: 16px;
+	margin: 10px 0px;
+
+	&:focus {
+		border: 1px solid var(--primary);
+		outline: 2px solid var(--secondary);
+	}
+
+	&[disabled], &[readonly] {
+		outline: 0;
+		border: 1px solid var(--secondary);
+		appearance: none;
+	}
+}
+
+swap-form {
+	display: flex;
+	flex-direction: column;
+
+	hr {
+		width: 100%;
+		color: var(--secondary);
+		opacity: .5;
+	}
+}

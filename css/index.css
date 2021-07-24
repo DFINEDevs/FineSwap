@@ -1,0 +1,168 @@
+@import url("https://fonts.googleapis.com/css2?family=Source+Sans+Pro:ital,wght@0,300;0,400;0,600;1,400;1,600&display=swap");
+:root {
+  --primary: linear-gradient(90deg, #338bcc, #7f21dd);
+  /* Your brand color */
+  --secondary: #777777;
+  /* Text color and secondary button background color */
+  --bolder: #000000;
+  /* Bolder text color, for inputs and bolds */
+  --yes: #00ff00;
+  /* "Accept" button background color */
+  --no: #ff0000;
+  /* "Decline" button background color */
+}
+
+body {
+  font-family: "Source Sans Pro", sans-serif;
+  background: var(--primary);
+  color: var(--secondary);
+  margin: 0;
+  overflow-y: scroll;
+}
+body > * {
+  padding: 0px 60px;
+}
+@media screen and (max-width: 660px) {
+  body > * {
+    padding: 0px 20px;
+  }
+}
+body * {
+  box-sizing: border-box;
+}
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: transparent;
+  color: white;
+}
+
+span[justify-sb] {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+}
+
+/*
+  <input> element file styling
+  exclusive for FineSwap's style
+*/
+input {
+  padding: 10px;
+  border: 1px solid var(--secondary);
+  outline: 0;
+  border-radius: 3px;
+  color: var(--bolder);
+  font-family: "Source Sans Pro", sans-serif;
+  font-weight: bold;
+  font-size: 16px;
+  margin: 10px 0px;
+}
+input:focus {
+  border: 1px solid var(--primary);
+  outline: 2px solid var(--secondary);
+}
+input[disabled], input[readonly] {
+  outline: 0;
+  border: 1px solid var(--secondary);
+  appearance: none;
+}
+
+swap-form {
+  display: flex;
+  flex-direction: column;
+}
+swap-form hr {
+  width: 100%;
+  color: var(--secondary);
+  opacity: 0.5;
+}
+
+drop-down {
+  display: inline-block;
+  width: 100%;
+  max-height: 50vh;
+  overflow-y: auto;
+  border: 1px solid var(--secondary);
+  padding: 15px;
+  border-radius: 3px;
+  background: white;
+  position: relative;
+  margin: 10px 0px;
+}
+drop-down > span-drop-down {
+  position: absolute;
+  top: 5px;
+  left: 5px;
+}
+drop-down > input[for=drop-down] {
+  /* Search bar */
+  display: none;
+  width: 100%;
+  margin-top: 0;
+  position: sticky;
+  top: 0;
+}
+drop-down > div {
+  /* Our <option> alternative */
+  width: 100%;
+  background: white;
+  padding: 10px;
+  display: none;
+}
+drop-down > div[hide] {
+  display: none !important;
+}
+drop-down > div[selected], drop-down > div:not([disabled]):hover {
+  background-color: var(--primary);
+  color: var(--secondary);
+}
+drop-down > div:not([disabled]):hover {
+  filter: opacity(0.75);
+}
+drop-down.show {
+  box-shadow: 0px 2px 2px var(--secondary);
+}
+drop-down.show > span-drop-down {
+  display: none;
+}
+drop-down.show > input[for=drop-down] {
+  display: block;
+}
+drop-down.show > div {
+  display: table;
+}
+
+swap-form {
+  background: white;
+  border: 0;
+  border-radius: 3px;
+  padding: 20px;
+  margin: 10px auto;
+  max-width: 50vw;
+}
+@media screen and (max-width: 660px) {
+  swap-form {
+    max-width: 100%;
+  }
+}
+
+button {
+  padding: 10px;
+  background: var(--primary);
+  border: 0;
+  border-radius: 3px;
+  color: white;
+  font-weight: bold;
+  font-family: "Source Sans Pro", sans-serif;
+  transition: 1s;
+  cursor: pointer;
+}
+button:hover {
+  filter: grayscale(1);
+}
+button:active {
+  scale: 0.95;
+}

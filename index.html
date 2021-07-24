@@ -1,0 +1,45 @@
+<html>
+	<head>
+		<title>Your Best To-The-Point Token Swap Website | FineSwap</title>
+		<meta charset="UTF-8">
+		<meta name="description" content="We are an open-source token swapping interface supporting variety token swapping contract and is to the point of your transaction, simple and elegance. Your satisfaction is our priority">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<!--
+		Get the source code by hitting Ctrl + S or costumize from our online git repository
+		at https://github.com/DFINEDevs/FineSwap
+
+		More details at README.md
+		-->
+
+		<link rel="icon" type="image/svg+xml" href="./imgs/favicon.svg" sizes="any">
+		<link rel="stylesheet" href="./css/index.css">
+
+		<script src="https://unpkg.com/web3@latest/dist/web3.min.js"></script>
+
+		<script src="./js/abis.js"></script>
+		<script src="./js/dropdown.js" defer></script>
+		<script src="./js/input.js" defer></script>
+		<script src="./js/index.js" defer></script>
+	</head>
+	<body>
+		<header>
+			<h2>FineSwap</h2>
+			<div>
+				<span id="ratio"></span>
+				<span id="pairName"></span>
+			</div>
+		</header>
+		<section>
+			<swap-form>
+				<span>Select your pair</span>
+				<drop-down id="pair"></drop-down>
+				<span justify-sb>You send: <b id="myOldBalance">0.000 BNB</b></span>
+				<input id="oldAmount" type="number" placeholder="0.0000">
+				<span justify-sb>You will get: <b id="myNewBalance">0.000 DFINE</b></span>
+				<input id="newAmount" type="number" placeholder="0.0000" readonly>
+				<button id="swapButton">Swap Now</button>
+			</swap-form>
+		</section>
+		<footer></footer>
+	</body>
+</html>
