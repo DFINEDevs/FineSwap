@@ -18,7 +18,9 @@
 			this.addEventListener('click', function(event) {
 				// Use for debugging:
 				//console.log(event);
-				if (event.target.matches('drop-down')) {
+				let options = this.options;
+
+				if (event.target.matches('drop-down') || event.target.matches('span-drop-down')) {
 					// Toggle the dropdown
 					this.classList.toggle("show");
 				} else if (event.target.matches('div') && !event.target.attributes.disabled) {
@@ -26,17 +28,24 @@
 					this.classList.remove("show");
 
 					// Assign some variables
-					if (this.selectedIndex !== undefined)
-						this.options[this.selectedIndex].attributes.removeNamedItem('selected');
+					if (
+						this.selectedIndex !== undefined &&
+						options[this.selectedIndex].attributes.selected
+					)
+						options[this.selectedIndex].attributes.removeNamedItem('selected');
 					// Assign private vars
 					this._value = event.target.attributes.value.value;
-					this._selectedIndex = this.options.indexOf(event.target);
+					this._selectedIndex = options.indexOf(event.target);
 
 					// Edit options styling
 					let attr = document.createAttribute('selected');
-					this.options[this.selectedIndex].attributes.setNamedItem(attr);
+					options[this.selectedIndex].attributes.setNamedItem(attr);
 
-					// Finally, rerender the element
+					// Finally, emit signal and rerender the element
+					this.dispatchEvent(new CustomEvent(
+						'changed',
+						{ detail: {value: this._value } }
+					));
 					this.render();
 				}
 			});
@@ -56,13 +65,13 @@
 			});
 
 			// Worst case: O(n), but who cares in this case??
-			let i = 0;
-			for (const opt of this.options) {
+			let options = this.options;
+			for (let i = 0; i < options.length; i++) {
+				let opt = options[i];
 				if (opt.attributes.selected && !opt.attributes.disabled) {
-					this.options[i].click();
+					options[i].click();
 					break;
 				}
-				i++;
 			}
 
 			this.render();
@@ -74,14 +83,18 @@
 
 		get value() { return this._value; }
 		set value(val) {
+			let options = this.options;
+
 			this._selectedIndex = undefined;
-			for (const opt of this.options) {
+			for (const opt of options) {
 				if (opt.attributes.value.value == val) {
-					this._selectedIndex = this.options.indexOf(opt);
+					this._selectedIndex = options.indexOf(opt);
 					break;
 				}
 			}
 			this._value = val;
+
+			this.dispatchEvent(new CustomEvent('changed', { detail: { value: val } }));
 			this.render();
 		}
 
@@ -90,6 +103,8 @@
 			if (isNaN(+val)) return;
 			this._value = this.options[+val].attributes.value.value;
 			this._selectedIndex = +val;
+
+			this.dispatchEvent(new CustomEvent('changed', { detail: { value: this._value } }));
 			this.render();
 		}
 
@@ -103,22 +118,30 @@
 		 * Some setters use this.
 		 */
 		render() {
-			this.display.innerText = this.options[this.selectedIndex]?.innerText || '';
+			let options = this.options;
+			this.display.innerText = options[this.selectedIndex]?.innerText || '';
 
 			// Move searchbar to be the first child
 			this.insertBefore(this.searchbar, this.firstChild);
 			// Reset searchbar's query
 			this.searchbar.value = '';
-			for (const opt of this.options) {
+			for (let i = 0; i < options.length; i++) {
+				let opt = options[i];
 				if (opt.attributes.hide)
 					opt.attributes.removeNamedItem('hide');
+				if (opt.attributes.selected && i !== this.selectedIndex)
+					opt.attributes.removeNamedItem('selected');
 			}
 		}
 	}
 
 	window.customElements.define('drop-down', DropDown, { extends: 'select' });
 	window.addEventListener('click', function(event) {
-		if (!event.target.matches('input[for=drop-down]') && !event.target.matches('drop-down.show')) {
+		if (
+			!event.target.matches('input[for=drop-down]') &&
+			!event.target.matches('drop-down.show') &&
+			!event.target.matches('span-drop-down')
+		) {
 			let dropdowns = [...document.querySelectorAll('drop-down.show')];
 			for (const el of dropdowns) {
 				el.classList.remove("show");

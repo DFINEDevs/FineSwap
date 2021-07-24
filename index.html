@@ -15,6 +15,7 @@
 		<link rel="stylesheet" href="./css/index.css">
 
 		<script src="https://unpkg.com/web3@latest/dist/web3.min.js"></script>
+		<script src="https://cdn.jsdelivr.net/npm/big.js@6.0.0/big.min.js"></script>
 
 		<script src="./js/abis.js"></script>
 		<script src="./js/dropdown.js" defer></script>
@@ -25,18 +26,18 @@
 		<header>
 			<h2>FineSwap</h2>
 			<div>
-				<span id="ratio"></span>
-				<span id="pairName"></span>
+				<span id="ratio" inter></span>
+				<span id="pairName" inter></span>
 			</div>
 		</header>
 		<section>
 			<swap-form>
 				<span>Select your pair</span>
 				<drop-down id="pair"></drop-down>
-				<span justify-sb>You send: <b id="myOldBalance">0.000 BNB</b></span>
+				<span justify-sb>You send: <b id="myOldBalance" clickable>0.000 BNB</b></span>
 				<input id="oldAmount" type="number" placeholder="0.0000">
-				<span justify-sb>You will get: <b id="myNewBalance">0.000 DFINE</b></span>
-				<input id="newAmount" type="number" placeholder="0.0000" readonly>
+				<span justify-sb>You will get: <b id="myNewBalance" clickable>0.000 DFINE</b></span>
+				<input id="newAmount" type="number" placeholder="0.0000">
 				<button id="swapButton">Swap Now</button>
 			</swap-form>
 		</section>

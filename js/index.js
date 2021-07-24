@@ -14,7 +14,7 @@ const pairs = [
 		burnAMintContract: '',
 		ratio: '10/1',
 		inversed: false
-	}
+	},
 ];
 
 /******************************************************************************************************************
@@ -31,6 +31,11 @@ window.$ = (selector) => {
 	let els = document.querySelectorAll(selector);
 	if (els.length == 1) return els[0];
 	else return els;
+};
+
+let oldAlert = window.alert;
+window.alert = (...args) => {
+	oldAlert(args.join('\n'));
 };
 
 /**
@@ -66,13 +71,34 @@ async function allowance(tokenAddress, spenderAddress, amount) {
 			}).on('transactionhash', (hash) => {
 				alert('Success', `The transaction hash is ${hash}`);
 			});
-
-			return true;
 		} catch (e) {
+			console.error(e);
 			return false;
 		}
 	}
+
+	return true;
 }
+
+async function login() {
+        // Do login procedure
+	// 'ethereum' global variable provided by Metamask
+	let accounts = await ethereum.request({ method: 'eth_requestAccounts' });
+	window.senderAccount = accounts[0];
+	// Reinit provider
+	window.web3 = new Web3(ethereum);
+}
+
+function getPair() {
+	return pairs[+($('#pair').value)];
+}
+
+function fromWei(wei, unitNum=1) {
+	return (Big(wei).div(Big(10).pow(+unitNum))).toString();
+}
+
+// Initialize web3
+if (window.ethereum !== undefined) login();
 
 // Initialize pairs dropdown
 (async () => {
@@ -86,12 +112,6 @@ async function allowance(tokenAddress, spenderAddress, amount) {
 		let attr = document.createAttribute('value');
 		attr.value = i.toString();
 		opt.attributes.setNamedItem(attr);
-		// 'selected' attribute
-		// only for the first option
-		if (i == 0) {
-			attr = document.createAttribute('selected');
-			opt.attributes.setNamedItem(attr);
-		}
 
 
 		// Assign option display
@@ -110,11 +130,17 @@ async function allowance(tokenAddress, spenderAddress, amount) {
 		$('#pair').appendChild(opt);
 	}
 
-	$('#pair').render();
+	// Add 'selected' attribute
+	// only for the first option
+	if ($('#pair').options[0]) {
+		// Setting .selectedIndex will automatically rerender the element
+		$('#pair').selectedIndex = 0;
+	}
 })();
 
 // Select pair dropdown onchange event
-$('#pair').addEventListener('changed', async function(newValue) {
+let pairChanged = async function(e) {
+	let newValue = e.detail.value;
 	if (isNaN(+newValue)) return;
 
 	// Reassign contracts
@@ -127,14 +153,16 @@ $('#pair').addEventListener('changed', async function(newValue) {
 	$('#pairName').innerText = $('#pair').options[+newValue].innerText;
 	$('#ratio').innerText = pairs[+newValue].ratio;
 	// Check balances
-	if (senderAccount) {
-		let symbols = $('#pairName').innerText.split(' -> ');
+	let symbols = $('#pairName').innerText.split(' -> ');
+	if (window.senderAccount) {
 		// Fetch balances
 		let oldBalance = await oldToken.methods.balanceOf(senderAccount).call();
+		oldToken.decimal = await oldToken.methods.decimals().call();
 		let newBalance = await newToken.methods.balanceOf(senderAccount).call();
+		newToken.decimal = await newToken.methods.decimals().call();
 		// Normalize numbers
-		oldBalance = +(web3.utils.fromWei(oldBalance)).toFixed(4);
-		newBalance = +(web3.utils.fromWei(newBalance)).toFixed(4);
+		oldBalance = (+fromWei(oldBalance, oldToken.decimal)).toFixed(4);
+		newBalance = (+fromWei(newBalance, newToken.decimal)).toFixed(4);
 		// Assign to innerTextes
 		$('#myOldBalance').innerText = `${oldBalance} ${symbols[0]}`;
 		$('#myNewBalance').innerText = `${newBalance} ${symbols[1]}`;
@@ -143,6 +171,38 @@ $('#pair').addEventListener('changed', async function(newValue) {
 		$('#myOldBalance').innerText = `0.0000 ${symbols[0]}`;
 		$('#myNewBalance').innerText = `0.0000 ${symbols[1]}`;
 	}
+};
+
+$('#pair').addEventListener('changed', pairChanged); // 'changed' is a custom event
+
+// (old|new)Amount input onchange
+$('#oldAmount').addEventListener('input', function() {
+	let pair = getPair();
+	let ratio = pair.ratio.split('/');
+
+	$('#newAmount').value = Big(this.value).mul(Big(ratio[1]).div(Big(ratio[0]))).toString();
+});
+
+$('#newAmount').addEventListener('input', function() {
+	let pair = getPair();
+	let ratio = pair.ratio.split('/');
+
+	$('#oldAmount').value = Big(this.value).mul(Big(ratio[0]).div(Big(ratio[1]))).toString();
+});
+
+// Swap by balance onclick
+$('#myOldBalance').addEventListener('click', async function() {
+	if (!window.senderAccount) return;
+	let balance = await oldToken.methods.balanceOf(senderAccount).call();
+	$('#oldAmount').value = fromWei(balance, oldToken.decimal);
+	$('#oldAmount').dispatchEvent(new Event('input'));
+});
+
+$('#myNewBalance').addEventListener('click', async function() {
+	if (!window.senderAccount) return;
+	let balance = await newToken.methods.balanceOf(senderAccount).call();
+	$('#newAmount').value = fromWei(balance, newToken.decimal);
+	$('#newAmount').dispatchEvent(new Event('input'));
 });
 
 // Swap Now button onclick
@@ -165,11 +225,7 @@ $('#swapButton').addEventListener('click', async function() {
 	// Web3 checks
 	if (!senderAccount && window.ethereum !== undefined) {
 		// Do login procedure
-		// 'ethereum' global variable provided by Metamask
-		let accounts = await ethereum.request({ method: 'eth_requestAccounts' });
-		window.senderAccount = accounts[0];
-		// Reinit provider
-		window.web3 = new Web3(ethereum);
+		await login();
 	} else if (window.ethereum === undefined) {
 		// Tell user to install metamask
 		return alert(
@@ -179,13 +235,12 @@ $('#swapButton').addEventListener('click', async function() {
 	}
 	// Check contracts
 	if (!window.oldToken || !window.newToken || !window.burnAMint) {
-		// Emit onchange event
-		$('#pair').emitonchange();
+		await pairChanged();
 	}
 	// Check allowance
 	// Only check the oldToken because burnAMint contract doesn't do
 	// any transferFrom call to newToken
-	let res = allowance(pair.oldTokenContract, pair.burnAMintContract, 1 + '0'.repeat(69));
+	let res = await allowance(pair.oldTokenContract, pair.burnAMintContract, 1 + '0'.repeat(69));
 	if (!res) {
 		return alert('Error', 'Failed creating transaction for token approval request');
 	}
@@ -195,7 +250,7 @@ $('#swapButton').addEventListener('click', async function() {
 	try {
 		await burnAMint.methods.burnamint(
 			pair.oldTokenContract, pair.newTokenContract,
-			pair.inversed, senderAccount, oldAmount
+			pair.inversed, senderAccount, oldAmount.replace('.', '')
 		).send({
 			from: senderAccount,
 			value: '0'
@@ -203,6 +258,7 @@ $('#swapButton').addEventListener('click', async function() {
 			alert('Success', `The transaction hash is ${hash}`);
 		});
 	} catch (e) {
+		console.error(e);
 		alert('Error', 'Failed creating transaction for token swap');
 	}
 });

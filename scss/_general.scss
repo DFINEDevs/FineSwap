@@ -33,3 +33,13 @@ span {
 		justify-content: space-between;
 	}
 }
+
+b {
+	&[clickable] {
+		cursor: pointer;
+	}
+}
+
+*[inter] {
+	font-family: 'Inter', sans-serif;
+}
