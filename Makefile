@@ -29,7 +29,4 @@ serve:
 .PHONY: clean
 clean: FILES=$(shell find -path '*~' -or -path '*.map' | tr '\n' ' ')
 clean:
-	$(foreach file,\
-		$(FILES),\
-		rm -f $(file);\
-	)
+	rm -f $(FILES)

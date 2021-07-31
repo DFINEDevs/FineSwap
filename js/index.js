@@ -2,25 +2,6 @@
 Swapping script, the core functionality. Please defer it.
 */
 
-/**
- * CONFIGURATION SECTION
- * Read README.md for more details
- */
-const staticProvider = '';
-const pairs = [
-	{
-		oldTokenContract: '',
-		newTokenContract: '',
-		burnAMintContract: '',
-		ratio: '10/1',
-		inversed: false
-	},
-];
-
-/******************************************************************************************************************
-******************************************     END OF THE CONFIG     **********************************************
-******************************************     USERS DO NOT PASS     *********************************************/
-
 window.web3 = new Web3(staticProvider);
 
 /**
@@ -100,6 +81,43 @@ function fromWei(wei, unitNum=1) {
 // Initialize web3
 if (window.ethereum !== undefined) login();
 
+// Select pair dropdown onchange event
+let pairChanged = async function(e) {
+	let newValue = e.detail.value;
+	if (isNaN(+newValue)) return;
+
+	// Reassign contracts
+	window.burnAMint = new web3.eth.Contract(burnAMintABI, pairs[+newValue].burnAMintContract);
+	window.oldToken = new web3.eth.Contract(erc20ABI, pairs[+newValue].oldTokenContract);
+	window.newToken = new web3.eth.Contract(erc20ABI, pairs[+newValue].newTokenContract);
+
+
+	// Rerender display
+	$('#pairName').innerText = $('#pair').options[+newValue].innerText;
+	$('#ratio').innerText = pairs[+newValue].ratio;
+	// Check balances
+	let symbols = $('#pairName').innerText.split(' -> ');
+	if (window.senderAccount) {
+		// Fetch balances
+		let oldBalance = await oldToken.methods.balanceOf(senderAccount).call();
+		oldToken.decimal = await oldToken.methods.decimals().call();
+		let newBalance = await newToken.methods.balanceOf(senderAccount).call();
+		newToken.decimal = await newToken.methods.decimals().call();
+		// Normalize numbers
+		oldBalance = (+fromWei(oldBalance, oldToken.decimal)).toFixed(4);
+		newBalance = (+fromWei(newBalance, newToken.decimal)).toFixed(4);
+		// Assign to innerTextes
+		$('#myOldBalance').innerText = `${oldBalance} ${symbols[0]}`;
+		$('#myNewBalance').innerText = `${newBalance} ${symbols[1]}`;
+	} else {
+		// Assign defaults to innerTextes
+		$('#myOldBalance').innerText = `0.0000 ${symbols[0]}`;
+		$('#myNewBalance').innerText = `0.0000 ${symbols[1]}`;
+	}
+};
+
+$('#pair').addEventListener('changed', pairChanged); // 'changed' is a custom event
+
 // Initialize pairs dropdown
 (async () => {
 	for (let i = 0; i < pairs.length; i++) {
@@ -137,43 +155,6 @@ if (window.ethereum !== undefined) login();
 		$('#pair').selectedIndex = 0;
 	}
 })();
-
-// Select pair dropdown onchange event
-let pairChanged = async function(e) {
-	let newValue = e.detail.value;
-	if (isNaN(+newValue)) return;
-
-	// Reassign contracts
-	window.burnAMint = new web3.eth.Contract(burnAMintABI, pairs[+newValue].burnAMintContract);
-	window.oldToken = new web3.eth.Contract(erc20ABI, pairs[+newValue].oldTokenContract);
-	window.newToken = new web3.eth.Contract(erc20ABI, pairs[+newValue].newTokenContract);
-
-
-	// Rerender display
-	$('#pairName').innerText = $('#pair').options[+newValue].innerText;
-	$('#ratio').innerText = pairs[+newValue].ratio;
-	// Check balances
-	let symbols = $('#pairName').innerText.split(' -> ');
-	if (window.senderAccount) {
-		// Fetch balances
-		let oldBalance = await oldToken.methods.balanceOf(senderAccount).call();
-		oldToken.decimal = await oldToken.methods.decimals().call();
-		let newBalance = await newToken.methods.balanceOf(senderAccount).call();
-		newToken.decimal = await newToken.methods.decimals().call();
-		// Normalize numbers
-		oldBalance = (+fromWei(oldBalance, oldToken.decimal)).toFixed(4);
-		newBalance = (+fromWei(newBalance, newToken.decimal)).toFixed(4);
-		// Assign to innerTextes
-		$('#myOldBalance').innerText = `${oldBalance} ${symbols[0]}`;
-		$('#myNewBalance').innerText = `${newBalance} ${symbols[1]}`;
-	} else {
-		// Assign defaults to innerTextes
-		$('#myOldBalance').innerText = `0.0000 ${symbols[0]}`;
-		$('#myNewBalance').innerText = `0.0000 ${symbols[1]}`;
-	}
-};
-
-$('#pair').addEventListener('changed', pairChanged); // 'changed' is a custom event
 
 // (old|new)Amount input onchange
 $('#oldAmount').addEventListener('input', function() {
@@ -250,7 +231,7 @@ $('#swapButton').addEventListener('click', async function() {
 	try {
 		await burnAMint.methods.burnamint(
 			pair.oldTokenContract, pair.newTokenContract,
-			pair.inversed, senderAccount, oldAmount.replace('.', '')
+			pair.inversed, senderAccount, web3.utils.toWei(oldAmount)
 		).send({
 			from: senderAccount,
 			value: '0'

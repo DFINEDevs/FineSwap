@@ -7,7 +7,7 @@ Token swap escrow front-end with burnAMint contract backend
 3. Fan up your webserver, done!
 
 # Setting Up Pairs
-In `js/index.js` file, you will be greeted by this configuration lines
+In `js/config.js` file, you will be greeted by this configuration lines
 
 ```javascript
 /**
@@ -35,7 +35,8 @@ This variable is an array of your pairs, the object explanation is as follow:
  - burnAMintContract: The contract address where your pair is hosted ([example contract](https://etherscan.io/address/0x4efa063ce441a35c0b92c5600a29b50678a9c17c))
  - ratio: String/Text variable where the first digit is your old token and the second is the new token, both are in real number (ex. '0.1/1' or '10/1' or '100/1')
  - inverted: If the operation is converting oldToken to newToken, this should be `false`, otherwise it should be `true`
-**Adding more pairs**
+
+#### Adding more pairs
 Just duplicate the object inside the array and give commas between each other. Practical example:
 ```javascript
 const pairs = [
@@ -66,4 +67,4 @@ Many options are available:
 4. You can do anything you want (see [LICENSE](LICENSE.md))
 
 # End Notes
-Join our [official telegram group](httpsL//t.me/dfin33) and follow [our twitter](https://twitter.com/Dfine2021) or visit our [website](https://dalecoin.finance) to get more information about us. Thank you for visiting our online repository
+Join our [official telegram group](https://t.me/dfin33) and follow [our twitter](https://twitter.com/Dfine2021) or visit our [website](https://dalecoin.finance) to get more information about us. Thank you for visiting our online repository
