@@ -14,10 +14,39 @@ window.$ = (selector) => {
 	else return els;
 };
 
-let oldAlert = window.alert;
-window.alert = (...args) => {
-	oldAlert(args.join('\n'));
-};
+// Alert function overwrite
+(async () => {
+	// Get SweetAlert2
+	eval(await(await fetch("./js/sweetalert2.js")).text());
+
+	let icons = ["error", "success", "info", "question"];
+
+	// Assign SweetAlert2 to window.alert
+	window.alert = function() {
+		let title, desc, icon;
+		let args = [...arguments];
+
+		title = args[0];
+
+		if (icons.includes(title.toLowerCase())) {
+			icon = title.toLowerCase();
+			args = args.slice(1);
+		}
+
+		if (args.length > 1) {
+			title = args[0];
+			args = args.slice(1);
+		}
+
+		desc = args.join('<br/>');
+
+		Swal.fire({
+			icon,
+			title,
+			html: desc
+		});
+	};
+})();
 
 /**
  * @function Number.toFixed
